@@ -20,7 +20,7 @@ class MyASGEGame(pyasge.ASGEGame):
             settings (pyasge.GameSettings): The game settings
         """
         pyasge.ASGEGame.__init__(self, settings)
-        self.renderer.setClearColour(pyasge.COLOURS.CORNFLOWER)
+        self.renderer.setClearColour(pyasge.COLOURS.BLACK)
 
         # create a game data object, we can store all shared game content here
         self.data = GameData()
@@ -55,22 +55,78 @@ class MyASGEGame(pyasge.ASGEGame):
         self.initFish()
 
     def initBackground(self) -> bool:
-        pass
+        if self.data.background.loadTexture("/data/images/background.png"):
+            #loaded so make sure this gets rendered first
+            self.data.background.z_order = -100
+            return True
+        else:
+            return False
 
     def initFish(self) -> bool:
-        pass
+        if self.fish.loadTexture("/data/images/kenney_fishpack/fishTile_073.png"):
+            self.fish.z_order = 1
+            self.fish.scale = 1
+            self.fish.x = 300
+            self.fish.y = 300
+            return True
+
+        return False
 
     def initScoreboard(self) -> None:
         pass
 
     def initMenu(self) -> bool:
-        pass
+        self.data.fonts["MainFont"] = self.data.renderer.loadFont("/data/fonts/KGHAPPY.ttf", 64)
+        self.menu_text = pyasge.Text(self.data.fonts["MainFont"])
+        self.menu_text.string = "The Fish Game"
+        self.menu_text.position = [100, 100]
+        self.menu_text.colour = pyasge.COLOURS.HOTPINK
+
+        # starting the game
+        self.play_option = pyasge.Text(self.data.fonts["MainFont"])
+        self.play_option.string = ">START"
+        self.play_option.position = [100, 400]
+        self.play_option.colour = pyasge.COLOURS.HOTPINK
+
+        # exiting game
+        self.exit_option = pyasge.Text(self.data.fonts["MainFont"])
+        self.exit_option.string = "EXIT"
+        self.exit_option.position = [500, 400]
+        self.exit_option.colour = pyasge.COLOURS.LIGHTSLATEGRAY
+        return True
+
+
+
+        return True
 
     def clickHandler(self, event: pyasge.ClickEvent) -> None:
         pass
 
     def keyHandler(self, event: pyasge.KeyEvent) -> None:
-        pass
+
+        # only act when key is pressed and not released
+        if event.action == pyasge.KEYS.KEY_PRESSED:
+
+            # use both the right and left keys to select the play
+            if event.key == pyasge.KEYS.KEY_RIGHT or event.key == pyasge.KEYS.KEY_LEFT:
+                self.menu_option = 1 - self.menu_option
+                if self.menu_option == 0:
+                    self.play_option.string = ">START"
+                    self.play_option.colour = pyasge.COLOURS.HOTPINK
+                    self.exit_option.string = "EXIT"
+                    self.exit_option.colour = pyasge.COLOURS.LIGHTSLATEGRAY
+                else:
+                    self.play_option.string = "START"
+                    self.play_option.colour = pyasge.COLOURS.LIGHTSLATEGRAY
+                    self.exit_option.string = ">EXIT"
+                    self.exit_option.colour = pyasge.COLOURS.HOTPINK
+
+            # if the enter key is pressed, action the menu option
+            if event.key == pyasge.KEYS.KEY_ENTER:
+                if self.menu_option == 0:
+                    self.menu = False
+                else:
+                    self.signal_exit()
 
     def spawn(self) -> None:
         pass
@@ -85,19 +141,17 @@ class MyASGEGame(pyasge.ASGEGame):
             pass
 
     def render(self, game_time: pyasge.GameTime) -> None:
-        """
-        This is the variable time-step function. Use to update
-        animations and to render the gam    e-world. The use of
-        ``frame_time`` is essential to ensure consistent performance.
-        @param game_time: The tick and frame deltas.
-        """
+        self.data.renderer.render(self.data.background)
 
         if self.menu:
             # render the menu here
-            pass
+            self.data.renderer.render(self.menu_text)
+            self.data.renderer.render(self.play_option)
+            self.data.renderer.render(self.exit_option)
+
         else:
             # render the game here
-            pass
+            self.data.renderer.render(self.fish)
 
 
 def main():
